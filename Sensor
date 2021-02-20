@@ -1,13 +1,177 @@
+// Include Arduino Wire library for I2C
+#include <Wire.h>
+ 
+int address_sensor1= 1; //binary equivalent is 0000001
+int address_sensor2= 2; //binary equivalent is 0000010
+int address_sensor3= 3; //binary equivalent is 0000011
+int address_sensor4= 4; //binary equivalent is 0000100
+int address_sensor5= 5; //binary equivalent is 0000101
+int address_sensor6= 6; //binary equivalent is 0000110
+int address_sensor7= 7; //binary equivalent is 0000111
+int address_sensor8= 8; //binary equivalent is 0001000
+ 
 void setup() {
-  
-Serial.begin(9600);
-pinMode(8, INPUT); // set pin as input
 
+Serial.begin(9600); //this creates the Serial Monitor
+Wire.begin(); //this creates a Wire object
 }
 
-void loop() {
-  int detect = digitalRead(8); // read cars status and store
-  if (detect == LOW) {
+void loop(){
+Wire.beginTransmission(address_sensor1); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor1, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect1 = Wire.read();
+if (detect == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+Wire.beginTransmission(address_sensor2); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor2, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect2 = Wire.read();
+if (detect2 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+Wire.beginTransmission(address_sensor3); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor3, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect3 = Wire.read();
+if (detect3 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+Wire.beginTransmission(address_sensor4); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor4, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect4 = Wire.read();
+if (detect4 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+
+Wire.beginTransmission(address_sensor5); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor5, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect5 = Wire.read();
+if (detect5 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+Wire.beginTransmission(address_sensor6); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor6, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect6 = Wire.read();
+if (detect6 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+
+Wire.beginTransmission(address_sensor7); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor7, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect7 = Wire.read();
+if (detect7 == LOW) {
+    Serial.println("car on the parking lot");
+  }else{
+    
+    Serial.println("Parking available");
+  }
+  delay(300);
+
+
+Wire.beginTransmission(address_sensor8); //Send a request to begin communication with the device at the specified address
+
+Wire.write(0); //Sends a bit asking for register 0, the data register of the sensor
+
+Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
+
+//this now reads the temperature from the sensor
+Wire.requestFrom(address_sensor8, 1);//this requests 1 byte from the specified address
+
+while(Wire.available() == 0);
+
+int detect8 = Wire.read();
+if (detect8 == LOW) {
     Serial.println("car on the parking lot");
   }else{
     
