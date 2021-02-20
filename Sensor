@@ -23,7 +23,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor1, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -43,7 +43,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads information from the sensor
 Wire.requestFrom(address_sensor2, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -62,7 +62,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor3, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -82,7 +82,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor4, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -103,7 +103,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor5, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -123,7 +123,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor6, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -144,7 +144,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor7, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
@@ -165,7 +165,7 @@ Wire.write(0); //Sends a bit asking for register 0, the data register of the sen
 
 Wire.endTransmission(); //this ends transmission of data from the arduino to the sensor
 
-//this now reads the temperature from the sensor
+//this now reads the information from the sensor
 Wire.requestFrom(address_sensor8, 1);//this requests 1 byte from the specified address
 
 while(Wire.available() == 0);
