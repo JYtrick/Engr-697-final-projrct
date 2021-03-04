@@ -1,0 +1,59 @@
+void setup() 
+{
+Serial.begin(9600);
+pinMode(2, INPUT); // set pin as input
+pinMode(3, INPUT); // set pin as input
+pinMode(4, INPUT); // set pin as input
+pinMode(5, INPUT); // set pin as input
+pinMode(6, INPUT); // set pin as input
+pinMode(7, INPUT); // set pin as input
+
+}
+
+void loop() {
+  int detect1 = digitalRead(2); // read cars status and store
+  int detect2 = digitalRead(3); // read cars status and store
+  int detect3 = digitalRead(4); // read cars status and store
+  int detect4 = digitalRead(5); // read cars status and store
+  int detect5 = digitalRead(6); // read cars status and store
+  int detect6 = digitalRead(7); // read cars status and store
+  
+  if (detect1 == LOW) {
+    Serial.println("car on the parking lot 1");
+  }else
+  { 
+    Serial.println("Parking 1 available");
+  }
+  if (detect2 == LOW) {
+    Serial.println("car on the parking lot 2");
+  }else
+  { 
+    Serial.println("Parking 2 available");
+  }
+  if (detect3 == LOW) {
+    Serial.println("car on the parking lot 3");
+  }else
+  { 
+    Serial.println("Parking 3 available");
+  }
+  if (detect4 == LOW) {
+    Serial.println("car on the parking lot 4");
+  }else
+  { 
+    Serial.println("Parking 4 available");
+  }
+  if (detect5 == LOW) {
+    Serial.println("car on the parking lot 5");
+  }else
+  { 
+    Serial.println("Parking 5 available");
+  }
+  if (detect6 == LOW) {
+    Serial.println("car on the parking lot 6");
+  }else
+  { 
+    Serial.println("Parking 6 available");
+  }
+  
+  delay(3000);
+}
