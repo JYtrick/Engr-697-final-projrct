@@ -1,0 +1,173 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <IRremote.h> // add IR remote library
+
+int IRpin1 = 7;	// sensor pin detect the car outdoor	
+int IRpin2 = 8; // sensor pin detect the car at the spot 1
+int IRpin3 = 9; // sensor pin detect the car at the spot 2
+int IRpin4 = 10; // sensor pin detect the car at the spot 3
+int IRpin5 = 11; // sensor pin detect the car at the spot 4
+int IRpin6 = 12; // sensor pin detect the car at the spot 5
+int IRpin7 = 13; // // sensor pin detect the car at the spot 6
+int motor_angle=0;
+int enter spot; // this spot number give to customer and they enter it when take car back
+IRrecv irrecv(IRpin1); 
+IRrecv irrecv(IRpin2); 
+IRrecv irrecv(IRpin3); 
+IRrecv irrecv(IRpin4); 
+IRrecv irrecv(IRpin5); 
+IRrecv irrecv(IRpin6); 
+IRrecv irrecv(IRpin7); 
+decode_results results;
+int spot = {0, 0, 0, 0, 0, 0}
+int root = {0, 0, 0, 0, 0, 0}
+void setup()
+{
+  lcd.init();
+  lcd.backlight();
+  Lcd.begin(16, 2);
+  lcd.setCursor (0,0); // the row at which to position the cursor (with 0 being the first row)
+  lcd.print(" SMART ROTARY ");
+  lcd.setCursor (0,1);
+  lcd.print(" PARKING SYSTEM ");
+  delay (200);
+  lcd.clear();
+  // Serial.begin(9600); // initialize serial communication
+  // Serial.println("IR Remote controlled servo motor"); // display message
+  irrecv.enableIRIn();  // Start the receiver  
+  servo1.attach(5); // declare servo motor pin
+  servo1.write(motor_angle); // move the motor to 0 deg
+  Serial.println("Servo motor angle 0 deg");
+  delay(2000);
+}
+void loop() 
+{
+	Parking();
+	Take();         		
+}
+Void parking()
+{
+	if(digitalRead(IRpin1) == LOW) // has car outside
+{
+if(result == 0 || result == 16 || result == 24 || result == 28|| result == 30 || result == 31) 
+{
+Serial.println("servo motor angle 60 deg");
+    			motor_angle = 60;
+          			servo1.write(motor_angle); // move the motor to 60 deg
+			digitalwrite(IRpin2, low); // Tray 1 is occupied
+			Total --;
+			spot[1] = 1;
+}
+else if(result == 32 || result == 40 || result == 44 || result == 46 || result == 47)
+{
+Serial.println("servo motor angle 120 deg");
+   			motor_angle = 120;          
+   			servo1.write(motor_angle); // move the motor to 120 deg
+			digitalwrite(IRpin3, low); // Tray 2 is occupied
+			Total --;
+			Spot[2] = 1;
+		}
+		else if(result == 48 || result == 52 || result == 54 || result == 55)
+		{
+			Serial.println("servo motor angle 180 deg");
+   			motor_angle = 180;          
+   			servo1.write(motor_angle); // move the motor to 180 deg
+			digitalwrite(IRpin4, low); // Tray 3 is occupied
+			Total --;
+			Spot[3] = 1;
+		}
+else if(result == 56 || result == 58 || result == 59)
+		{
+			Serial.println("servo motor angle 240 deg");
+   			motor_angle = 240;          
+   			servo1.write(motor_angle); // move the motor to 240 deg
+			digitalwrite(IRpin5, low); // Tray 4 is occupied
+			Total --;
+			spot[4] = 1;
+		}
+		else if(result == 60 || result == 61)
+		{
+			Serial.println("servo motor angle 300 deg");
+   			motor_angle = 300;          
+   			servo1.write(motor_angle); // move the motor to 300 deg
+			digitalwrite(IRpin6, low); // Tray 5 is occupied
+			Total --;
+			spot[5] = 1;
+		}
+		else if(result == 62)
+		{
+			Serial.println("servo motor angle 360 deg");
+   			motor_angle = 360;          
+   			servo1.write(motor_angle); // move the motor to 360 deg
+			digitalwrite(IRpin7, low); // Tray 6 is occupied
+			Total --;
+			Spot[6] = 1;
+}
+else
+{
+lcd.setCursor (0,0);
+lcd.print("    SORRY :(    ");  
+lcd.setCursor (0,1);
+lcd.print("  Parking Full  "); 
+delay (200);
+lcd.clear(); 
+}
+	}
+
+}
+Void take()
+{
+	Switch(root)
+	{
+		Case 1:
+			If(enter spot = 1)
+				No rotate 
+			If(enter spot > 1 && enter spot <= 6)
+				rotate_angle clockwise (enter spot – 1)*60; // motor rotate at the angle of (enter spot number – 1)*60 degree
+			root = enter spot;
+			break;
+		Case 2:
+			If(enter spot = 2)
+				No rotate
+			If(enter spot = 1)
+				rotate_angle counter clockwise 60; // motor rotate counter clockwise at the angle of 60 degree
+			
+			If(enter spot > 2 && enter spot <= 6)
+				rotate_angle clockwise (enter spot – 2)*60; // motor rotate at the angle of (enter spot number – 2)*60 degree
+			root = enter spot;
+			break;
+		Case 3:
+			If(enter spot = 3)
+				No rotate
+			If((enter spot = 1 || enter spot = 2)
+				rotate_angle counter clockwise (3 – enter spot)*60; // motor rotate counter clockwise at the angle of (3 – enter spot number)*60 degree
+			if(enter spot > 3 && enter spot <= 6)
+				rotate_angle clockwise (enter spot – 3)*60; // motor rotate at the angle of (enter spot number – 3)*60 degree
+			root = enter spot;
+			break;
+		Case 4:
+			If(enter spot = 4)
+				No rotate
+			if(enter spot = 1 || enter spot = 2 || enter spot = 3)
+				rotate_angle counter clockwise (4 – enter spot)*60; // motor rotate counter clockwise at the angle of (4 – enter spot number)*60 degree
+			if(enter spot > 4 && enter spot <= 6)
+				rotate_angle clockwise (enter spot – 4)*60; // motor rotate at the angle of (enter spot number – 4)*60 degree
+			root = enter spot;
+			break;
+		Case 5:
+			If(enter spot = 5)
+				No rotate
+			if(enter spot = 2 || enter spot = 3 || enter spot = 4)
+				rotate_angle counter clockwise (5 – enter spot)*60; // motor rotate counter clockwise at the angle of (4 – enter spot number)*60 degree
+			if(enter spot = 6)
+				rotate_angle clockwise 60; // motor rotate at the angle of 60 degree
+			root = enter spot;
+			break;
+		Case 6:
+			If(enter spot = 6)
+				No rotate
+			else
+				rotate_angle counter clockwise (6 - enter spot)*60; // motor rotate counter clockwise at the angle of (enter spot number – 2)*60 degree
+			root = enter spot;
+			break;
+}
