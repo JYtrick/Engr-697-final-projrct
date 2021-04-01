@@ -1,0 +1,224 @@
+#include <UTFT.h> 
+#include <URTouch.h>
+//==== Creating Objects
+UTFT myGLCD(SSD1289,38,39,40,41); //Parameters should be adjusted to your Display/Schield model
+URTouch myTouch( 6, 5, 4, 3, 2);
+//==== Defining Variables
+extern uint8_t SmallFont[];
+extern uint8_t BigFont[];
+extern uint8_t SevenSegNumFont[];
+
+int x, y;
+char currentPage;
+//Parking Order
+//const int VCC = 13;
+//const int trigPin = 11;
+//const int echoPin = 12;
+//long duration;
+//int distanceInch, distanceCm;
+// Taking car
+
+void setup() {
+// Initial setup
+myGLCD.InitLCD();
+myGLCD.clrScr();
+myTouch.InitTouch();
+myTouch.setPrecision(PREC_MEDIUM);
+// Defining Pin Modes
+pinMode(VCC, OUTPUT); // VCC
+pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+pinMode(redLed, OUTPUT);
+pinMode(greenLed, OUTPUT);
+pinMode(blueLed, OUTPUT);
+pinMode(button, INPUT);
+digitalWrite(VCC, HIGH); // +5V - Pin 13 as VCC
+drawHomeScreen(); // Draws the Home Screen
+currentPage = '0'; // Indicates that we are at Home Screen
+}
+void loop() { 
+// Home Screen
+if (currentPage == '0') {
+if (myTouch.dataAvailable()) {
+myTouch.read();
+x=myTouch.getX(); // X coordinate where the screen has been pressed
+y=myTouch.getY(); // Y coordinates where the screen has been pressed
+// If we press the Parking Order 
+if ((x>=35) && (x<=285) && (y>=90) && (y<=130)) {
+drawFrame(35, 90, 285, 130); // Custom Function -Highlighs the buttons when it's pressed
+currentPage = '1'; // Indicates that we are the first example
+myGLCD.clrScr(); // Clears the screen
+drawParkingOrder(); // It is called only once, because in the next iteration of the loop, this above if statement will be false so this funtion won't be called. This function will draw the graphics of the first example.
+}
+// If we press the Taking car Button 
+if ((x>=35) && (x<=285) && (y>=140) && (y<=180)) {
+drawFrame(35, 140, 285, 180);
+currentPage = '2';
+myGLCD.clrScr();
+drawTakingCar();
+} 
+delay(1000);
+}
+}
+}
+// Parking Order button
+if (currentPage == '1') { 
+//getSpot(); // Gets distance from the sensor and this function is repeatedly called while we are at the first example in order to print the lasest results from the distance sensor
+if (myTouch.dataAvailable()) {
+myTouch.read();
+x=myTouch.getX();
+y=myTouch.getY();
+// If we press the Completed Parking Button
+if ((x>=10) && (x<=135) &&(y>=90) && (y<=163)) {
+spot[] = 1;
+else
+spot[] = 0;
+}
+// If we press the Back Button
+if ((x>=10) && (x<=60) &&(y>=10) && (y<=36)) {
+drawFrame(10, 10, 60, 36);
+currentPage = '0'; // Indicates we are at home screen
+myGLCD.clrScr();
+drawHomeScreen(); // Draws the home screen
+}
+}
+}
+// Taking car 
+if (currentPage == '2') {
+spotenter();
+if (myTouch.dataAvailable()) {
+myTouch.read();
+x=myTouch.getX();
+y=myTouch.getY();
+//Back button
+if ((x>=10) && (x<=60) &&(y>=10) && (y<=36)) {
+drawFrame(10, 10, 60, 36);
+currentPage = '0';
+myGLCD.clrScr();
+drawHomeScreen();
+}
+}
+}
+// ====== Custom Funtions ======
+// drawHomeScreen - Custom Function
+void drawHomeScreen() {
+// Title
+myGLCD.setBackColor(0,0,0); // Sets the background color of the area where the text will be printed to black
+myGLCD.setColor(255, 255, 255); // Sets color to white
+myGLCD.setFont(BigFont); // Sets font to big
+myGLCD.print("Welcome to  RPS", CENTER, 10); // Prints the string on the screen
+myGLCD.setColor(255, 0, 0); // Sets color to red
+myGLCD.drawLine(0,32,319,32); // Draws the red line
+myGLCD.setColor(255, 255, 255); // Sets color to white
+myGLCD.setFont(SmallFont); // Sets the font to small
+myGLCD.print("by Yunjie and Bao", CENTER, 41); // Prints the string
+myGLCD.setFont(BigFont);
+myGLCD.print("Select Button", CENTER, 64);
+// Button – Parking order
+myGLCD.setColor(16, 167, 103); // Sets green color
+myGLCD.fillRoundRect (35, 90, 285, 130); // Draws filled rounded rectangle
+myGLCD.setColor(255, 255, 255); // Sets color to white
+myGLCD.drawRoundRect (35, 90, 285, 130); // Draws rounded rectangle without a fill, so the overall appearance of the button looks like it has a frame
+myGLCD.setFont(BigFont); // Sets the font to big
+myGLCD.setBackColor(16, 167, 103); // Sets the background color of the area where the text will be printed to green, same as the button
+myGLCD.print("PARKING ORDER", CENTER, 102); // Prints the string
+// Button – Taking Car
+myGLCD.setColor(16, 167, 103);
+myGLCD.fillRoundRect (35, 140, 285, 180);
+myGLCD.setColor(255, 255, 255);
+myGLCD.drawRoundRect (35, 140, 285, 180);
+myGLCD.setFont(BigFont);
+myGLCD.setBackColor(16, 167, 103);
+myGLCD.print("TAKING CAR", CENTER, 152);
+}
+// Highlights the button when pressed
+void drawFrame(int x1, int y1, int x2, int y2) {
+myGLCD.setColor(255, 0, 0);
+myGLCD.drawRoundRect (x1, y1, x2, y2);
+while (myTouch.dataAvailable())
+myTouch.read();
+myGLCD.setColor(255, 255, 255);
+myGLCD.drawRoundRect (x1, y1, x2, y2);
+}
+//====================================================
+void drawParkingOrder() {
+myGLCD.setColor(100, 155, 203);
+myGLCD.fillRoundRect (10, 10, 60, 36);
+myGLCD.setColor(255, 255, 255);
+myGLCD.drawRoundRect (10, 10, 60, 36);
+myGLCD.setFont(BigFont);
+myGLCD.setBackColor(100, 155, 203);
+myGLCD.print("<-", 18, 15);
+myGLCD.setBackColor(0, 0, 0);
+myGLCD.setFont(SmallFont);
+myGLCD.print("Back to Main Menu", 70, 18);
+myGLCD.setFont(BigFont);
+myGLCD.print("Please Parking", CENTER, 50);
+myGLCD.print("to spot", CENTER, 76);
+myGLCD.setColor(255, 0, 0);
+myGLCD.drawLine(0,100,319,100);
+myGLCD.setBackColor(0, 0, 0);
+myGLCD.setColor(255, 255, 255);
+myGLCD.setFont(BigFont);
+myGLCD.print("SPOT:", 130, 120);
+myGLCD.setColor(223, 77, 55);
+myGLCD.fillRoundRect (10, 135, 90, 163);
+myGLCD.setColor(225, 255, 255);
+myGLCD.drawRoundRect (10, 135, 90, 163);
+myGLCD.setBackColor(223, 77, 55);
+myGLCD.setColor(255, 255, 255);
+myGLCD.print("PARKING COMPLETED", 33, 140);
+myGLCD.setColor(223, 77, 55);
+myGLCD.fillRoundRect (10, 173, 90, 201);
+myGLCD.setColor(255, 255, 255);
+}
+//====================================================
+//===== getSpot - Custom Function
+void getSpot() {
+Write the function to get the Spot number here
+// Prints the Spot  number
+myGLCD.setFont(SevenSegNumFont);
+myGLCD.setColor(0, 255, 0);
+myGLCD.setBackColor(0, 0, 0);
+myGLCD.printNumI(Spot,130, 145, 3,'0');
+}
+delay(10);
+}
+//====================================================
+void drawTakingcar() {
+myGLCD.setColor(100, 155, 203);
+myGLCD.fillRoundRect (10, 10, 60, 36);
+myGLCD.setColor(255, 255, 255);
+myGLCD.drawRoundRect (10, 10, 60, 36);
+myGLCD.setFont(BigFont);
+myGLCD.setBackColor(100, 155, 203);
+myGLCD.print("<-", 18, 15);
+myGLCD.setBackColor(0, 0, 0);
+myGLCD.setFont(SmallFont);
+myGLCD.print("Back to Main Menu", 70, 18);
+myGLCD.setFont(BigFont);
+myGLCD.print("Please Taking", CENTER, 50);
+myGLCD.print("Your Car", CENTER, 76);
+myGLCD.setColor(255, 0, 0);
+myGLCD.drawLine(0,100,319,100);
+myGLCD.setBackColor(0, 0, 0);
+myGLCD.setColor(255, 255, 255);
+myGLCD.setFont(BigFont);
+myGLCD.print("Spot number:", 130, 120);
+myGLCD.setColor(223, 77, 55);
+myGLCD.fillRoundRect (10, 135, 90, 163);
+myGLCD.setColor(225, 255, 255);
+myGLCD.drawRoundRect (10, 135, 90, 163);
+myGLCD.setBackColor(223, 77, 55);
+myGLCD.setColor(255, 255, 255);
+myGLCD.print("ENTER SPOT", 33, 140);
+myGLCD.setColor(223, 77, 55);
+myGLCD.fillRoundRect (10, 173, 90, 201);
+myGLCD.setColor(255, 255, 255);
+}
+//====================================================
+//============= setLedColor() - Custom Funtion
+void setspotenter() {
+
+Write the function to send the Spot number here to motor arduino
+}
