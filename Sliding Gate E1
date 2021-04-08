@@ -114,3 +114,8 @@ delay (1000);
 flag1=0, flag2=0;
 }
 lcd.setCursor (0,0);
+lcd.print("    WELCOME!    ");
+lcd.setCursor (0,1);
+lcd.print("Slot Left: ");
+lcd.print(Slot);
+}
