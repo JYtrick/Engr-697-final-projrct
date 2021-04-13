@@ -123,7 +123,7 @@ if(irrecv1.decode(&results1) == 0 || irrecv1.decode(&results1) == 16 || irrecv1.
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
   
-//      digitalwrite(recvpin1, low); // Tray 1 is occupied
+      digitalWrite(recvpin1, LOW); // Tray 1 is occupied
       Total --;
       spot[1] = 1;
       ground = 1;
@@ -146,7 +146,7 @@ else if(irrecv2.decode(&results2) == 32 || irrecv2.decode(&results2) == 40 || ir
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
 
-//      digitalwrite(recvpin2, low); // Tray 2 is occupied
+      digitalWrite(recvpin2, LOW); // Tray 2 is occupied
       Total --;
       spot[2] = 1;
       ground = 2;
@@ -170,7 +170,7 @@ else if(irrecv2.decode(&results2) == 32 || irrecv2.decode(&results2) == 40 || ir
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
 
-//      digitalwrite(recvpin3, low); // Tray 3 is occupied
+      digitalWrite(recvpin3, LOW); // Tray 3 is occupied
       Total --;
       spot[3] = 1;
       ground = 3;
@@ -193,7 +193,7 @@ else if(irrecv4.decode(&results4) == 56 || irrecv4.decode(&results4) == 58 || ir
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
 
-//      digitalwrite(recvpin4, low); // Tray 4 is occupied
+      digitalWrite(recvpin4, LOW); // Tray 4 is occupied
       Total --;
       spot[4] = 1;
       ground = 4;
@@ -216,7 +216,7 @@ else if(irrecv4.decode(&results4) == 56 || irrecv4.decode(&results4) == 58 || ir
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
       
-//      digitalwrite(recvpin5, low); // Tray 5 is occupied
+      digitalWrite(recvpin5, LOW); // Tray 5 is occupied
       Total --;
       spot[5] = 1;
       ground = 5;
@@ -239,7 +239,7 @@ else if(irrecv4.decode(&results4) == 56 || irrecv4.decode(&results4) == 58 || ir
       analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
       delay(5000);
      
-//      digitalwrite(recvpin6, low); // Tray 6 is occupied
+      digitalWrite(recvpin6, LOW); // Tray 6 is occupied
       Total --;
       spot[6] = 1;
       ground = 6;
