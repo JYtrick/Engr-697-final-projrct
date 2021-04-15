@@ -317,7 +317,7 @@ void takingCar()
       {
         Gatemove();
         // Take the enter spot number which the guest enter minus the ground number 
-        // and then time to the time distance between two spot moving
+        // and then multiply it to the time distance between two spot moving
         // delay(the time we have calculated)
         digitalWrite(recvpin1, HIGH); // update spot 1 is available
         Total++;
