@@ -1,0 +1,503 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <IRremote.h> // add IR remote library
+LiquidCrystal_I2C lcd(0x27,20,4);  //Change the HEX address
+
+//Setup pins in Channel A
+  const int MotorPinA = 12;
+  const int MotorSpeedPinA = 3;
+  const int MotorBrakePinA = 9;
+
+//Setup pins in Channel B
+  const int MotorPinB = 13;
+  const int MotorSpeedPinB = 11;
+  const int MotorBrakePinB = 8;
+//Setup derictions in Channel A & B
+  const int CW = HIGH;
+  const int CCW = LOW;
+  
+//  const int showComments = 1;// show comments in serial monitor
+int IR0 = 2;  // sensor pin detect the car outdoor 
+int IR1 = 3;  // sensor pin detect the car indoor  
+
+int recvpin1 = 8; // sensor pin detect the car at the spot 1
+int recvpin2 = 9; // sensor pin detect the car at the spot 2
+int recvpin3 = 10; // sensor pin detect the car at the spot 3
+int recvpin4 = 11; // sensor pin detect the car at the spot 4
+int recvpin5 = 12; // sensor pin detect the car at the spot 5
+int recvpin6 = 13; // // sensor pin detect the car at the spot 6
+
+int Slot = 6;           //Enter Total number of parking Slots
+
+//int motor_angle = 0;
+int enter_spot[6] = {0, 0, 0, 0, 0, 0}; // this spot number give to customer and they enter it when take car back
+
+int flag1 = 0;
+int flag2 = 0;
+
+//IRrecv irrecv1(recvpin1); 
+//IRrecv irrecv2(recvpin2); 
+//IRrecv irrecv3(recvpin3); 
+//IRrecv irrecv4(recvpin4); 
+//IRrecv irrecv5(recvpin5); 
+//IRrecv irrecv6(recvpin6); 
+
+//decode_results results1;
+//decode_results results2;
+//decode_results results3;
+//decode_results results4;
+//decode_results results5;
+//decode_results results6;
+
+//int results[6] = {8, 9, 10, 11, 12, 13};
+int results[6] = {recvpin1, recvpin2, recvpin3, recvpin4, recvpin5, recvpin6};
+int spot[6] = {0, 0, 0, 0, 0, 0};
+int root[6] = {0, 0, 0, 0, 0, 0};
+
+int ground; // define the initial ground is spot 1
+
+int Total = 6;           //Enter Total number of parking Slots
+void setup()
+{
+  Serial.begin(9600);
+  //Serial.println("enter_spot number: ");
+ 
+  // Start the sensor/receiver
+  pinMode(IR0, INPUT);
+  pinMode(IR1, INPUT);
+  pinMode(recvpin1, INPUT);
+  pinMode(recvpin2, INPUT);
+  pinMode(recvpin3, INPUT);
+  pinMode(recvpin4, INPUT);
+  pinMode(recvpin5, INPUT);
+  pinMode(recvpin6, INPUT);
+
+  ground = 1;
+//  irrecv1.enableIRIn();  // Start the receiver  
+//  irrecv2.enableIRIn();  // Start the receiver
+//  irrecv3.enableIRIn();  // Start the receiver
+//  irrecv4.enableIRIn();  // Start the receiver
+//  irrecv5.enableIRIn();  // Start the receiver
+//  irrecv6.enableIRIn();  // Start the receiver
+
+  // Start motor A
+  pinMode(MotorPinA, OUTPUT); //Initiates Motor Channel A pin
+  pinMode(MotorSpeedPinA, OUTPUT);//Initiates Speed Channel A pin
+  pinMode(MotorBrakePinA, OUTPUT); //Initiates Brake Channel A pin
+
+  // Start motor B
+  pinMode(MotorPinB, OUTPUT); //Initiates Motor Channel B pin
+  pinMode(MotorSpeedPinB, OUTPUT);//Initiates Speed Channel B pin
+  pinMode(MotorBrakePinB, OUTPUT); //Initiates Brake Channel B pin
+  
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor (0,0); // the row at which to position the cursor (with 0 being the first row)
+  lcd.print(" SMART ROTARY ");
+  lcd.setCursor (0,1);
+  lcd.print(" PARKING SYSTEM ");
+  delay (2000);
+  lcd.clear();
+
+  // TODO:
+  // Need to set up the touch screen for PARKING and TAKING to operate those functions
+  
+  //Serial.begin(9600); // initialize serial communication
+  //Serial.println("spot number is: "); // display message
+  
+  //delay(2000);
+
+//  if (Serial.available() > 0) {    // is a character available?
+//    enter_spot = Serial.read();       // get the character
+//
+//    // check if a number was received
+//    if ((enter_spot >= '1') && (enter_spot <= '6')) {
+//      Serial.print("Number received: ");
+//      Serial.println(enter_spot);
+//    }
+//    else {
+//      Serial.println("Invalid number.");
+//    }
+//  } // end: if (Serial.available() > 0)
+}
+
+void loop() 
+{
+  parkingCar();
+  takingCar(); 
+  slidinggate();  
+  Gatemove();
+  Gatestop();          
+}
+
+void parkingCar()
+{
+  int irr1 = digitalRead(recvpin1);
+  int irr2 = digitalRead(recvpin2);
+  int irr3 = digitalRead(recvpin3);
+  int irr4 = digitalRead(recvpin4);
+  int irr5 = digitalRead(recvpin5);
+  int irr6 = digitalRead(recvpin6);
+  int posCheck = (irr1 * 32) + (irr2 * 16) + (irr3 * 8) + (irr4 * 4) + (irr5 * 2) + (irr6 * 1);  
+
+  // Spot 1 is available. There is no car parks at spot 1
+  if (posCheck == 0 || 
+      posCheck == 16 || 
+      posCheck == 24 || 
+      posCheck == 28|| 
+      posCheck == 30 || 
+      posCheck == 31) 
+  {
+    // Start the motor to rotate to exact spot we want
+    // Should combine into one function rotateMotor() or something
+    
+    if(ground = 1) // if spot 1 is currently at ground. There is nothing to do
+    {
+      Gatestop();
+      digitalWrite(recvpin1, LOW); // update spot 1 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin1, LOW); // update spot 1 is occupied
+      Total--;
+      ground = 1;
+      Gatestop();
+    }
+  }
+  // Spot 2 is available
+  else if (posCheck == 32 || 
+           posCheck == 40 || 
+           posCheck == 44 || 
+           posCheck == 46 || 
+           posCheck == 47)
+  {
+    
+    if(ground = 2)
+    {
+      Gatestop();
+      digitalWrite(recvpin2, LOW); // update spot 2 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin2, LOW); // update spot 2 is occupied
+      Total--;
+      ground = 2;
+      Gatestop();
+    }
+  }
+  // Spot 3 is available
+  else if (posCheck == 48 || 
+           posCheck == 52 || 
+           posCheck == 54 || 
+           posCheck == 55)
+  {
+    
+    if(ground = 3)
+    {
+      Gatestop();
+      digitalWrite(recvpin3, LOW); // update spot 3 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin3, LOW); // update spot 3 is occupied
+      Total--;
+      ground = 3;
+      Gatestop();
+    }
+  }
+  // Spot 4 is avaible is avaible
+  else if (posCheck == 56 || 
+           posCheck == 58 || 
+           posCheck == 59)
+  {
+    
+    if(ground = 4)
+    {
+      Gatestop();
+      digitalWrite(recvpin4, LOW); // update spot 4 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin4, LOW); // update spot 4 is occupied
+      Total--;
+      ground = 4;
+      Gatestop();
+    }
+  }
+  else if (posCheck == 60 || 
+           posCheck == 61)
+  {
+    
+    if(ground = 5)
+    {
+      Gatestop();
+      digitalWrite(recvpin5, LOW); // update spot 5 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin5, LOW); // update spot 5 is occupied
+      Total--;
+      ground = 5;
+      Gatestop();
+    }
+  }
+  else if(posCheck == 62)
+  {
+    
+    if(ground = 6)
+    {
+      Gatestop();
+      digitalWrite(recvpin6, LOW); // update spot 6 is occupied
+      Total--;
+    }
+    else
+    {
+      Gatemove();
+      // TODO
+      // Write the function to send the spot to ground
+      digitalWrite(recvpin6, LOW); // update spot 6 is occupied
+      Total--;
+      ground = 6;
+      Gatestop();
+    }
+  }
+  else
+  {
+    lcd.setCursor (0,0);
+    lcd.print("    SORRY :(    ");  
+    lcd.setCursor (0,1);
+    lcd.print("  Parking Full  "); 
+    delay (200);
+    lcd.clear(); 
+  }
+}
+
+
+void takingCar()
+{
+  // TODO:
+  // Write a function to read the value that is entered by guest
+  // Then assign this value to the index of array enter_spot
+  // Function to read the value from LCD
+  // enter_spot is read from LCD which is entered by guest
+  // Need to figure out how to read the data that is entered from LCD
+  
+//  switch(root[6])
+  switch(ground)
+  {
+    case 1:
+      if(enter_spot[0] == 1) // should remember that the index is from 0-5 corresponds to the spot from 1-6
+      { 
+        Gatestop();
+        digitalWrite(recvpin1, HIGH); // update spot 1 is available
+        Total++;
+        ground = 1;
+      }
+      else 
+      {
+        Gatemove();
+        // lay gia tri ma khach nhap vao tru di cho gia tri ground
+        // duoc ket qua bao nhieu thi nhan voi thoi gian de chuyen toi vi tri ke tiep
+        // delay(gia tri ma minh tinh duoc)
+        digitalWrite(recvpin1, HIGH); // update spot 1 is available
+        Total++;
+        ground = 1;
+        Gatestop();
+      }
+      break;
+    case 2:
+      if(enter_spot[1] == 1)
+      { 
+        Gatestop();
+        digitalWrite(recvpin2, HIGH); // update spot 2 is available
+        Total++;
+        ground = 2;
+      }
+      else 
+      {
+        Gatemove();
+        digitalWrite(recvpin2, HIGH); // update spot 2 is available
+        Total++;
+        ground = 2;
+        Gatestop();
+      }
+      break;
+    case 3:
+      if(enter_spot[2] == 1)
+      { 
+        Gatestop();
+        digitalWrite(recvpin3, HIGH); // update spot 3 is available
+        Total++;
+        ground = 3;
+      }
+      else 
+      {
+        Gatemove();
+        digitalWrite(recvpin3, HIGH); // update spot 3 is available
+        Total++;
+        ground = 3;
+        Gatestop();
+      }
+      break;
+    case 4:
+      if(enter_spot[3] == 1)
+      { 
+        Gatestop();
+        digitalWrite(recvpin4, HIGH); // update spot 4 is available
+        Total++;
+        ground = 4;
+      }
+      else 
+      {
+        Gatemove();
+        digitalWrite(recvpin4, HIGH); // update spot 4 is available
+        Total++;
+        ground = 4;
+        Gatestop();
+      }
+      break;
+    case 5:
+      if(enter_spot[4] == 1)
+      { 
+        Gatestop();
+        digitalWrite(recvpin4, HIGH); // update spot 4 is available
+        Total++;
+        ground = 5;
+      }
+      else 
+      {
+        Gatemove();
+        digitalWrite(recvpin4, HIGH); // update spot 4 is available
+        Total++;
+        ground = 5;
+        Gatestop();
+      }
+      break;
+    case 6:
+      if(enter_spot[5] == 1)
+      { 
+        Gatestop();
+        digitalWrite(recvpin6, HIGH); // update spot 6 is available
+        Total++;
+        ground = 6;
+      }
+      else 
+      {
+        Gatemove();
+        digitalWrite(recvpin6, HIGH); // update spot 6 is available
+        Total++;
+        ground = 6;
+        Gatestop();
+      }
+      break;
+  }
+}
+   
+   
+void slidinggate()
+{ 
+if(digitalRead (IR0) == LOW && flag1==0){
+if(Slot>0){flag1=1;
+if(flag2==0)
+{
+//forward @  25% duty cycle speed
+  digitalWrite(MotorPinA, CW); //Establishes forward direction of Channel A
+  digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+  analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 15% duty cycle speed
+  delay(3000);
+  digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel 
+  delay(4000);
+  //backward @  50% duty cycle speed
+ digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+ digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+ analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+ delay(3000);
+ digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+
+  
+  Slot = Slot-1;
+  }
+}else{
+lcd.setCursor (0,0);
+lcd.print("    SORRY :(    ");  
+lcd.setCursor (0,1);
+lcd.print("  Parking Full  "); 
+delay (3000);
+
+
+lcd.clear(); 
+}
+}
+
+if(digitalRead (IR1) == LOW && flag2==0){flag2=1;
+if(flag1==0)
+{
+  
+//forward @  25% duty cycle speed
+  digitalWrite(MotorPinA, CW); //Establishes forward direction of Channel A
+  digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+  analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 15% duty cycle speed
+  delay(3000);
+  digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+ delay(4000);
+//backward @  50% duty cycle speed
+digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+ digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+ analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+delay(3000);
+ digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+  
+  Slot = Slot+1;
+  }
+}
+
+if(flag1==1 && flag2==1){
+// delay (1000);
+delay (1000);
+// myservo1.write(100);
+//
+  digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+  
+  //delay(5000);
+flag1=0, flag2=0;
+}
+lcd.setCursor (0,0);
+lcd.print("    WELCOME!    ");
+lcd.setCursor (0,1);
+lcd.print("Slot Left: ");
+lcd.print(Slot);
+}
+
+
+void Gatemove()
+{
+  digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+  digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+  analogWrite(MotorSpeedPinB, 64);   //Spins the motor on Channel B at 15% duty cycle speed
+  delay(5000);
+}
+void Gatestop()
+{
+  digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel 
+  delay(3000);
+}
