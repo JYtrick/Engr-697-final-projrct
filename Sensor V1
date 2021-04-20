@@ -155,7 +155,7 @@ void parkingCar()
   }
   
   // Spot 2 is available
-  else if (posCheck == 16 ||
+  else if (posCheck == 31 ||
            posCheck == 23 ||
            posCheck == 19 ||
            posCheck == 17 ||
