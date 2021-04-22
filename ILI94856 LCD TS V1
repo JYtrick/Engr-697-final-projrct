@@ -4,6 +4,7 @@
 #include "TouchScreen.h"
 MCUFRIEND_kbv tft;
 
+
 // You can include several fonts but WARNING! They take up a lot of space.
 #include "Fonts/FreeSansBold24pt7b.h"
 #include "Fonts/FreeMono18pt7b.h"
@@ -54,6 +55,7 @@ int tftColours[] = {BLUE, RED, GREEN, CYAN, MAGENTA, YELLOW, WHITE};
 // Create the TFT object with all pin assignments
 // This leaves pins 2, 3, 4, 5 free. Also pin 12 if you don't use SD card.
 //Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+int x, y;
 
 // Set up the touch screen element of the TFT screen
 #define YP A3  // must be an analog pin, use "An" notation!
@@ -66,7 +68,6 @@ int tftColours[] = {BLUE, RED, GREEN, CYAN, MAGENTA, YELLOW, WHITE};
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, SENSITIVITY);
 
 
-
 //----------------------------------------------------------------------------
 // Function for calculate the dots 
 //----------------------------------------------------------------------------
@@ -74,13 +75,13 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, SENSITIVITY);
 int col[8];
 void showmsgXY(int x, int y, int sz, const GFXfont *f, const char *msg)
 {
-int16_t x1, y1;
-uint16_t wid, ht;
-tft.setFont(f);
-tft.setCursor(x, y);
-tft.setTextColor(0x0000);
-tft.setTextSize(sz);
-tft.print(msg);
+  int16_t x1, y1;
+  uint16_t wid, ht;
+  tft.setFont(f);
+  tft.setCursor(x, y);
+  tft.setTextColor(0x0000);
+  tft.setTextSize(sz);
+  tft.print(msg);
 }
 
 //----------------------------------------------------------------------------
@@ -107,22 +108,22 @@ void setup() {
 //  col[6] = tft.color565(255, 180, 220);
 //  col[7] = tft.color565(255, 210, 240);
 
-
-  
- // Showing();
-  //MenuPage();
-  ParkingPage();
+     Retrieving();
+  // Showing();
+  // MenuPage();
+  // ParkingPage();
 }
 
 //----------------------------------------------------------------------------
 // LOOP      LOOP      LOOP      LOOP      LOOP      LOOP      LOOP      LOOP
 //----------------------------------------------------------------------------
 void loop() {
+  
+  
 
-
- // tft.fillScreen(BLACK);
+ //   tft.fillScreen(BLACK);
 //
-//  for (int cnt=0; cnt< 3; cnt++) {
+//    for (int cnt=0; cnt< 3; cnt++) {
 //    tft.setCursor(120, 100);
 //    tft.setTextColor(getRandomColour());
 //    tft.setFont(&FreeSerifBold18pt7b);
@@ -160,9 +161,9 @@ void loop() {
   //tft.invertDisplay(true);
   //Parking();
 
-
   //tft.reset();
 }
+
 
 unsigned int getRandomColour() {
   static unsigned int prevColour = 99;
@@ -242,36 +243,35 @@ TSPoint waitOneTouch() {
 //  tft.setCursor(205, 290);
 //  tft.println("Exit");
 //}
-
-void ParkingPage(){
-  
-  tft.fillScreen(BLACK);
-  tft.setTextColor(WHITE);
-  tft.setFont(&FreeMonoBoldOblique18pt7b);
-  tft.setTextSize(1);
-  tft.setCursor(25,40);
-  tft.println("Parking Confirmation");
-  tft.drawFastHLine(0,60,480,RED);
-
-  //Button - YES
-  tft.fillRoundRect(100,105,300,60,3,BLUE); 
-  tft.drawRoundRect(100,105,300,60,3,WHITE); 
-  tft.setTextColor(GREEN);
-  tft.setFont(&FreeSansBold24pt7b);
-  tft.setTextSize(1);
-  tft.setCursor(175, 148);
-  tft.println("YES");
-   
-  //Button - NO
-  tft.fillRoundRect(100,210,60,3,BLUE);
-  tft.drawRoundRect(100,210,60,3,WHITE); 
-  tft.setTextColor(RED);
-  tft.setFont(&FreeSansBold24pt7b);
-  tft.setTextSize(1);
-  tft.setCursor(220, 220);
-  tft.println("NO");
-} 
-
+//
+//void ParkingPage(){
+//  
+//  tft.fillScreen(BLACK);
+//  tft.setTextColor(WHITE);
+//  tft.setFont(&FreeMonoBoldOblique18pt7b);
+//  tft.setTextSize(1);
+//  tft.setCursor(25,40);
+//  tft.println("Parking Confirmation");
+//  tft.drawFastHLine(0,60,480,RED);
+//
+//  //Button - YES
+//  tft.fillRoundRect(100,105,300,60,3,BLUE); 
+//  tft.drawRoundRect(100,105,300,60,3,WHITE); 
+//  tft.setTextColor(GREEN);
+//  tft.setFont(&FreeSansBold24pt7b);
+//  tft.setTextSize(1);
+//  tft.setCursor(210, 150);
+//  tft.println("YES");
+//   
+//  //Button - NO
+//  tft.fillRoundRect(100,210,300,60,3,BLUE); 
+//  tft.drawRoundRect(100,210,300,60,3,WHITE); 
+//  tft.setTextColor(RED);
+//  tft.setFont(&FreeSansBold24pt7b);
+//  tft.setTextSize(1);
+//  tft.setCursor(210, 260);
+//  tft.println("NO");
+//} 
 //
 //void ReturnCarPage(){
 //}
@@ -298,13 +298,109 @@ void ParkingPage(){
 //  tft.fillCircle(240 + 40 * (cos(-(i + 5)*PI / 4)), 120 + 40 * (sin(-(i + 5)*PI / 4)), 10, col[5]); delay(15);
 //  tft.fillCircle(240 + 40 * (cos(-(i + 6)*PI / 4)), 120 + 40 * (sin(-(i + 6)*PI / 4)), 10, col[6]); delay(15);
 //  tft.fillCircle(240 + 40 * (cos(-(i + 7)*PI / 4)), 120 + 40 * (sin(-(i + 7)*PI / 4)), 10, col[7]); delay(15);
-//
 //}
 //}
 //
-//void Retrieving(){
-//}
+
+void Retrieving(){
+  
+  tft.fillScreen(BLACK);
+  tft.setCursor(0, 43);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(1);
+  tft.println("Parking Slot#:");
+  //tft.print();
+
+  
+  tft.drawFastHLine(0,63,480,RED);
+
+// Draw the upper row of buttons
+  for (x=0; x<3; x++)
+  {
+  tft.fillRect(25+(x*110),85,95,95,BLUE);   
+  tft.drawRect(25+(x*110),85,95,95,WHITE); 
+  }
+
+  tft.setCursor(45, 160);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("1");
+  
+  tft.setCursor(155, 165);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("2");
+
+  tft.setCursor(265, 165);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("3");
+
+
+// Draw the lower row of buttons
+   for (x=0; x<3; x++)
+  {
+  tft.fillRect(25+(x*110),195,95,95,BLUE);   
+  tft.drawRect(25+(x*110),195,95,95,WHITE);
+}
+
+  tft.setCursor(45, 275);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("4");
+  
+  tft.setCursor(155, 275);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("5");
+
+  tft.setCursor(265, 275);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(2);
+  tft.println("6");
+
+
+// Draw the 3 buttons
+  for (x=0; x<3; x++)
+ {
+  
+ tft.fillRoundRect(360,70+(x*85),100,70,6,BLUE); 
+ tft.drawRoundRect(360,70+(x*85),100,70,6,WHITE); 
+ //tft.setTextColor(CYAN);
+  
+ }
+
+  tft.setCursor(375, 110);
+  tft.setTextColor(GREEN);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(1);
+  tft.println("Enter");
+  
+  tft.setCursor(370, 195);
+  tft.setTextColor(RED);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(1);
+  tft.println("Cancel");
+
+  tft.setCursor(380, 280);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(1);
+  tft.println("Back");
+
+
+
+
+}
 //
+
 
 void Showing(){
   tft.fillScreen(BLACK);
@@ -333,7 +429,7 @@ void Showing(){
   tft.setTextColor(ORANGE);
   tft.setTextSize(1);
   tft.setFont(&FreeMonoBold12pt7b);
-  tft.println("ENGR 697G-05 Engineering Design ");
+  tft.println("ENGR 697G-05 Engineering Design");
   tft.println("             Project II - SP2021");
   tft.setTextColor(BLUE);
   tft.println("Instructor:");
@@ -347,6 +443,7 @@ void Showing(){
   tft.println("Team Member:");
   tft.setTextColor(GREEN);
   tft.print("Yunjie Li & Bao Chau");
+  
   delay(5000);
   
 }
