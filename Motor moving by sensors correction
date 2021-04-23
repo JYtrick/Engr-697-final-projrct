@@ -124,21 +124,20 @@ void parkingCar()
       }
       else
       {
-        GatemoveCCW();
+        digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+        digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+        analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+        delay ((ground - 1) * 800);
+        digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+        delay(4000);
+        
         Slot = Slot - 1;
         ground = 1;
         delay(2000);
             }
         }
   }
-
-//  // Reset flag1 = 0 if the spots are still available
-//  if (flag1 == 1 && Slot > 0)
-//      {
-//    flag1 = 0;
-//      }
   }
- 
   // Spot 2 is available
   if ((posCheck == 31 || posCheck == 27 || posCheck == 29 || posCheck == 30 ||
       posCheck == 23 || posCheck == 21 || posCheck == 22 || posCheck == 24 ||
@@ -159,26 +158,30 @@ void parkingCar()
      
             if (ground == 1)
             {
-              GatemoveCW();
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 2;
               delay(2000);
             }
             else
             {
-                GatemoveCCW();
+                digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+                digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+                analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+                delay ((ground - 2) * 800);
+                digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+                delay(4000);
                 Slot = Slot - 1;
                 ground = 2;
                 delay(2000);
             }
         }
       }
-    
-//  // Reset flag1 = 0 if the spots are still available
-//      if (flag1 == 1 && Slot > 0)
-//      {
-//          flag1 = 0;
-//      }
   }
 
   // Spot 3 is available
@@ -199,26 +202,30 @@ void parkingCar()
           }
           if (ground == 1 || ground == 2)
           {
-              GatemoveCW();
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((3 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 3;
               delay(2000);
           }
           else
           {
-              GatemoveCCW();
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 3) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 3;
               delay(2000);
           }
       }
   }
-
-//  // Reset flag1 = 0 if the spots are still available
-//      if (flag1 == 1 && Slot > 0)
-//      {
-//          flag1 = 0;
-//      }
   } 
 
   // Spot 4 is avaible
@@ -238,26 +245,30 @@ void parkingCar()
           }
           if (ground == 1 || ground == 2 || ground == 3)
           {
-              GatemoveCW();
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((4 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 4;
               delay(2000);
           }
           else
           {
-              GatemoveCCW();
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 4) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 4;
               delay(2000);
           }
       }
   }
-
-//  // Reset flag1 = 0 if the spots are still available
-//      if (flag1 == 1 && Slot > 0)
-//      {
-//          flag1 = 0;
-//      }
   }
 
   // Spot 5 is avaible
@@ -276,26 +287,30 @@ void parkingCar()
           }
           if (ground == 6)
           {
-              GatemoveCCW();
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 5;
               delay(2000);
           }
           else
           {
-              GatemoveCW();
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((5 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 5;
               delay(2000);
           }
       }
   }
-
-//  // Reset flag1 = 0 if the spots are still available
-//      if (flag1 == 1 && Slot > 0)
-//      {
-//          flag1 = 0;
-//      }
   }
 
   // Spot 6 is available
@@ -313,19 +328,18 @@ void parkingCar()
           }
           else
           {
-              GatemoveCW();
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((6 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+              delay(4000);
               Slot = Slot - 1;
               ground = 6;
               delay(2000);
           }
       }
   }
-
-//  // Reset flag1 = 0 if the spots are still available
-//      if (flag1 == 1 && Slot > 0)
-//      {
-//          flag1 = 0;
-//      }
   }
   
   if (posCheck == 0)
