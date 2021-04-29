@@ -1,0 +1,773 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <IRremote.h> // add IR remote library
+LiquidCrystal_I2C lcd(0x27, 20, 4); //Change the HEX address
+
+//Setup pins in Channel A
+const int MotorPinA = 12;
+const int MotorSpeedPinA = 3;
+const int MotorBrakePinA = 9;
+
+//Setup pins in Channel B
+const int MotorPinB = 13;
+const int MotorSpeedPinB = 11;
+const int MotorBrakePinB = 8;
+
+//Setup derictions in Channel A & B
+const int CW = HIGH;
+const int CCW = LOW;
+
+
+int IR0 = 0;  // sensor pin detect the car outdoor
+int IR1 = 0;  // sensor pin detect the car indoor
+
+int recvpin1 = 2; // sensor pin detect the car at the spot 1
+int recvpin2 = 4; // sensor pin detect the car at the spot 2
+int recvpin3 = 5; // sensor pin detect the car at the spot 3
+int recvpin4 = 6; // sensor pin detect the car at the spot 4
+int recvpin5 = 7; // sensor pin detect the car at the spot 5
+int recvpin6 = 10; // sensor pin detect the car at the spot 6
+int Total = 6; //Total number of parking Slots
+int Slot; //Parking Slots
+
+// Boolean value to keep track on the parking or taking
+int flag1 = 0;
+int flag2 = 0;
+
+int results[6] = {recvpin1, recvpin2, recvpin3, recvpin4, recvpin5, recvpin6};
+int spot[6] = {0, 0, 0, 0, 0, 0};
+int root[6] = {0, 0, 0, 0, 0, 0};
+
+int ground; // Keep track the ground position
+int enter_spot[6] = {0, 0, 0, 0, 0, 0};
+int input;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  // Start the sensor/receiver
+  pinMode(IR0, INPUT);
+  pinMode(IR1, INPUT);
+  pinMode(recvpin1, INPUT);
+  pinMode(recvpin2, INPUT);
+  pinMode(recvpin3, INPUT);
+  pinMode(recvpin4, INPUT);
+  pinMode(recvpin5, INPUT);
+  pinMode(recvpin6, INPUT);
+
+  // Initial value 
+  ground = 1;
+  Slot = Total;
+  
+
+  // Start motor A
+  pinMode(MotorPinA, OUTPUT); //Initiates Motor Channel A pin
+  pinMode(MotorSpeedPinA, OUTPUT);//Initiates Speed Channel A pin
+  pinMode(MotorBrakePinA, OUTPUT); //Initiates Brake Channel A pin
+
+  // Start motor B
+  pinMode(MotorPinB, OUTPUT); //Initiates Motor Channel B pin
+  pinMode(MotorSpeedPinB, OUTPUT);//Initiates Speed Channel B pin
+  pinMode(MotorBrakePinB, OUTPUT); //Initiates Brake Channel B pin
+
+  // Set up for LCD
+//  lcd.init();
+//  lcd.backlight();
+//  lcd.setCursor (0, 0); // the row at which to position the cursor (with 0 being the first row)
+//  lcd.print(" SMART ROTARY ");
+//  lcd.setCursor (0, 1);
+//  lcd.print(" PARKING SYSTEM ");
+//  delay (2000);
+//  lcd.clear();
+
+  // TODO:
+  // Need to set up the touch screen for PARKING and TAKING to operate those functions
+}
+
+void loop()
+// by this order
+{  
+   // Set up for LCD
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor (0, 0); // the row at which to position the cursor (with 0 being the first row)
+  lcd.print(" SMART ROTARY ");
+  lcd.setCursor (0, 1);
+  lcd.print(" PARKING SYSTEM ");
+  delay (2000);
+  lcd.clear();
+  parkingCar();
+  takingCar();
+  opengate();
+  closegate();
+}
+
+void parkingCar()
+{
+  int irr1in = digitalRead(recvpin1); //sensor detect the car give number 0, no car give number 1
+  int irr2in = digitalRead(recvpin2);
+  int irr3in = digitalRead(recvpin3);
+  int irr4in = digitalRead(recvpin4);
+  int irr5in = digitalRead(recvpin5);
+  int irr6in = digitalRead(recvpin6);
+  int checkin = digitalRead(IR0);
+  int posCheckin = (irr1in * 32) + (irr2in * 16) + (irr3in * 8) + (irr4in * 4) + (irr5in * 2) + (irr6in * 1);
+  // Spot 1 is available. There is no car parks at spot 1
+  if ((posCheckin >= 32 && posCheckin <= 63) && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+  {
+    flag1 = 1;
+    
+    if (flag2 == 0)
+    {
+      if (ground == 1)
+      {
+        Slot = Slot - 1;
+        delay(500);
+      }
+      else
+      {
+        digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+        digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+        analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+        delay ((ground - 1) * 800);
+        digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+       // delay(1000);
+        
+        Slot = Slot - 1;
+        ground = 1;
+        delay(500);
+            }
+        }
+  }
+  }
+  // Spot 2 is available
+  if ((posCheckin >= 16 && posCheckin <= 31) && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+      {
+          flag1 = 1;
+          if (flag2 == 0) 
+        {
+            if (ground == 2)
+            {
+              Slot = Slot - 1;
+              delay(500);
+            }
+     
+            if (ground == 1)
+            {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot - 1;
+              ground = 2;
+              delay(500);
+            }
+            else
+            {
+                digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+                digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+                analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+                delay ((ground - 2) * 800);
+                digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+               // delay(1000);
+                Slot = Slot - 1;
+                ground = 2;
+                delay(500);
+            }
+        }
+      }
+  }
+
+  // Spot 3 is available
+  if ((posCheckin >= 8 && posCheckin <= 15) && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+  {
+    flag1 = 1;
+    if (flag2 == 0)
+    {
+          if (ground == 3)
+          {
+              Slot = Slot - 1;
+              delay(500);
+          }
+          if (ground == 1 || ground == 2)
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((3 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+          //    delay(1000);
+              Slot = Slot - 1;
+              ground = 3;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 3) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot - 1;
+              ground = 3;
+              delay(500);
+          }
+      }
+  }
+  } 
+
+  // Spot 4 is avaible
+  if ((posCheckin >= 4 && posCheckin <= 7) && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+  {
+    flag1 = 1;
+    if (flag2 == 0)
+    {
+          if (ground == 4)
+          {
+              Slot = Slot - 1;
+              delay(500);
+          }
+          if (ground == 1 || ground == 2 || ground == 3)
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((4 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+          //    delay(1000);
+              Slot = Slot - 1;
+              ground = 4;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 4) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+             // delay(1000);
+              Slot = Slot - 1;
+              ground = 4;
+              delay(500);
+          }
+      }
+  }
+  }
+
+  // Spot 5 is avaible
+  if ((posCheckin >= 2 && posCheckin <= 3) && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+  {
+    flag1 = 1;
+    if (flag2 == 0)
+    {
+          if (ground == 5)
+          {
+              Slot = Slot - 1;
+              delay(500);
+          }
+          if (ground == 6)
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot - 1;
+              ground = 5;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((5 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot - 1;
+              ground = 5;
+              delay(500);
+          }
+      }
+  }
+  }
+
+  // Spot 6 is available
+  if (posCheckin == 1 && checkin == LOW && flag1 == 0)
+  {
+  if (Slot > 0 || Slot <= Total)
+  {
+    flag1= 1;
+    if (flag2 == 0)
+    {
+          if (ground == 6)
+          {
+              Slot = Slot - 1;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((6 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot - 1;
+              ground = 6;
+              delay(500);
+          }
+      }
+  }
+  }
+  
+  if (posCheckin == 0)
+  {
+    lcd.setCursor (0, 0);
+    lcd.print("    SORRY :(    ");
+    lcd.setCursor (0, 1);
+    lcd.print("  Parking Full  ");
+   // delay (10000);
+    lcd.clear();
+  }
+
+  if (flag1 == 1 && Slot > 0)
+      {
+          flag1 = 0;
+      }
+
+  Serial.print("Number of slot for Parking function: ");
+  Serial.println(Slot);
+  Serial.print("Position check for Parking function: ");
+  Serial.println(posCheckin);
+  Serial.print("Current slot for Parking function: ");
+  Serial.println(ground);
+  Serial.println("");
+  delay (1000);
+}
+void takingCar()
+{
+  int irr1out = digitalRead(recvpin1); //sensor detect the car give number 0, no car give number 1
+  int irr2out = digitalRead(recvpin2);
+  int irr3out = digitalRead(recvpin3);
+  int irr4out = digitalRead(recvpin4);
+  int irr5out = digitalRead(recvpin5);
+  int irr6out = digitalRead(recvpin6);
+  int checkout = digitalRead(IR1);
+  int posCheckout = (irr1out * 32) + (irr2out * 16) + (irr3out * 8) + (irr4out * 4) + (irr5out * 2) + (irr6out * 1);
+//  if(Serial.available()>0)
+//  {
+//    input = Serial.read();
+//    Serial.print("input number:");
+//    Serial.println(input); 
+//  }
+  while (Serial.available() == 0);
+  int input = Serial.parseInt();
+  Serial.println(input);
+  
+  // Retrive car at spot 1, sensor 1 detect the car as low and get # 0
+  if (posCheckout <= 31 && input == 1 && flag2 == 0)
+  {
+  if (Slot <= Total)
+  {
+    flag2 = 1;
+    
+    if (flag1 == 0)
+    {
+      if (ground == 1)
+      {
+        Slot = Slot + 1;
+        delay(500);
+      }
+      else
+      {
+        digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+        digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+        analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+        delay ((ground - 1) * 800);
+        digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+       // delay(1000);
+        
+        Slot = Slot + 1;
+        ground = 1;
+        delay(500);
+            }
+        }
+  }
+  }
+   // Retrive car at spot 2, sensor 2 detect the car as low and get # 0
+  if ((posCheckout <= 47) && input == 2 && flag2 == 0)
+  {
+  if (Slot <= Total)
+      {
+          flag2 = 1;
+          if (flag1 == 0) 
+        {
+            if (ground == 2)
+            {
+              Slot = Slot + 1;
+              delay(500);
+            }
+     
+            if (ground == 1)
+            {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+             // delay(1000);
+              Slot = Slot + 1;
+              ground = 2;
+              delay(500);
+            }
+            else
+            {
+                digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+                digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+                analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+                delay ((ground - 2) * 800);
+                digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+             //   delay(1000);
+                Slot = Slot + 1;
+                ground = 2;
+                delay(500);
+            }
+        }
+      }
+  }
+  // Retrive car at spot 3, sensor 3 detect the car as low and get # 0
+  if ((posCheckout <= 55) && input == 3 && flag2 == 0)
+  {
+  if (Slot <= Total)
+  {
+    flag2 = 1;
+    if (flag1 == 0)
+    {
+          if (ground == 3)
+          {
+              Slot = Slot + 1;
+              delay(500);
+          }
+          if (ground == 1 || ground == 2)
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((3 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot + 1;
+              ground = 3;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 3) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+            //  delay(1000);
+              Slot = Slot + 1;
+              ground = 3;
+              delay(500);
+          }
+      }
+  }
+  } 
+  // Retrive car at spot 4, sensor 4 detect the car as low and get # 0
+  if ((posCheckout <= 59) && input == 4 && flag2 == 0)
+  {
+  if (Slot <= Total)
+  {
+    flag2 = 1;
+    if (flag1 == 0)
+    {
+          if (ground == 4)
+          {
+              Slot = Slot + 1;
+              delay(500);
+          }
+          if (ground == 1 || ground == 2 || ground == 3)
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((4 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+          //    delay(1000);
+              Slot = Slot + 1;
+              ground = 4;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((ground - 4) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+             // delay(1000);
+              Slot = Slot + 1;
+              ground = 4;
+              delay(500);
+          }
+      }
+  }
+  }
+  // Retrive car at spot 5, sensor 5 detect the car as low and get # 0
+  if ((posCheckout <= 61) && input == 5 && flag2 == 0)
+  {
+  if (Slot <= Total)
+  {
+    flag1 = 1;
+    if (flag2 == 0)
+    {
+          if (ground == 5)
+          {
+              Slot = Slot + 1;
+              delay(500);
+          }
+          if (ground == 6)
+          {
+              digitalWrite(MotorPinB, CCW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay (800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+           //   delay(1000);
+              Slot = Slot + 1;
+              ground = 5;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((5 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+           //   delay(1000);
+              Slot = Slot + 1;
+              ground = 5;
+              delay(500);
+          }
+      }
+  }
+  }
+  // Retrive car at spot 6, sensor 6 detect the car as low and get # 0
+  if ((posCheckout <= 62) && input == 6 && flag2 == 0)
+  {
+  if (Slot <= Total)
+  {
+    flag2= 1;
+    if (flag1 == 0)
+    {
+          if (ground == 6)
+          {
+              Slot = Slot + 1;
+              delay(500);
+          }
+          else
+          {
+              digitalWrite(MotorPinB, CW); //Establishes forward direction of Channel B
+              digitalWrite(MotorBrakePinB, LOW);   //Disengage the Brake for Channel B
+              analogWrite(MotorSpeedPinB, 120);   //Spins the motor on Channel B at 15% duty cycle speed
+              delay ((6 - ground) * 800);
+              digitalWrite(MotorBrakePinB, HIGH); //Eengage the Brake for Channel
+             // delay(1000);
+              Slot = Slot + 1;
+              ground = 6;
+              delay(500);
+          }
+      }
+  }
+  }
+//  if (posCheckout == 63)
+//  {
+//    lcd.setCursor (0, 0);
+//    lcd.print("    SORRY :(    ");
+//    lcd.setCursor (0, 1);
+//    lcd.print("  No car in the parking lot  ");
+//    delay (2000);
+//    lcd.clear();
+//  }
+
+  if (flag2 == 1 && Slot > 0)
+      {
+          flag2 = 0;
+      }
+
+  Serial.print("Number of slot for Taking function: ");
+  Serial.println(Slot);
+  Serial.print("Position check for Taking function: ");
+  Serial.println(posCheckout);
+  Serial.print("Current slot for Taking function: ");
+  Serial.println(ground);
+  Serial.println("");
+  delay (1000);
+}
+  
+void opengate()
+{
+  if (digitalRead (IR0) == LOW) 
+  {
+  // if (digitalRead (IR0) == LOW && flag1 == 0) {
+//    if (Slot > 0) {
+//      flag1 = 1;
+//      if (flag2 == 0)
+  //    {
+        //forward @  25% duty cycle speed
+      if (Slot > 0 && Slot <= 6)
+      {
+        digitalWrite(MotorPinA, CW); //Establishes forward direction of Channel A
+        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 15% duty cycle speed
+        delay(3000);
+        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel
+        delay(4000);
+      }
+      else 
+      {
+      lcd.setCursor (0, 0);
+      lcd.print("    SORRY :(    ");
+      lcd.setCursor (0, 1);
+      lcd.print("  Parking Full  ");
+      delay (3000);
+      lcd.clear();
+      }
+   }
+}
+  void closegate()
+  {
+    if (digitalRead (IR0) == LOW)
+    {
+        //backward @  50% duty cycle speed
+        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+        delay(3000);
+        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+        delay (8000); 
+    }
+  }
+      
+//    if (digitalRead(recvpin2) == LOW && ground == 1) 
+//    {
+//    
+//        //backward @  50% duty cycle speed
+//        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//        delay(3000);
+//        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//        delay (4000);
+
+//     
+//  if (digitalRead(recvpin2) == LOW && ground == 1 && posCheck != 15) 
+//    {
+//    
+//        //backward @  50% duty cycle speed
+//        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//        delay(3000);
+//        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//      
+//      break;
+//      
+//  case 4:    if (digitalRead(recvpin4) == LOW && ground == 4) 
+//    
+//        //backward @  50% duty cycle speed
+//        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//        delay(3000);
+//        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//      
+//      break;
+//      
+//    case 5:  if (digitalRead(recvpin5) == LOW && ground == 5) 
+//    
+//        //backward @  50% duty cycle speed
+//        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//        delay(3000);
+//        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//      
+//
+//      break;
+//      
+//   case 6:   if (digitalRead(recvpin6) == LOW && ground == 6) 
+//    
+//        //backward @  50% duty cycle speed
+//        digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//        digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//        analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//        delay(3000);
+//        digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//      
+//      break;
+//      return 0;
+//  }
+//    }
+
+//  
+
+//  if (digitalRead (IR0) == LOW && flag2 == 0) {
+//    flag2 = 1;
+//    if (flag1 == 0)
+//    {
+//
+//      //forward @  25% duty cycle speed
+//      digitalWrite(MotorPinA, CW); //Establishes forward direction of Channel A
+//      digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//      analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 15% duty cycle speed
+//      delay(3000);
+//      digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//      delay(4000);
+//      //backward @  50% duty cycle speed
+//      digitalWrite(MotorPinA, CCW); //Establishes backward direction of Channel A
+//      digitalWrite(MotorBrakePinA, LOW);   //Disengage the Brake for Channel A
+//      analogWrite(MotorSpeedPinA, 64);   //Spins the motor on Channel A at 50% duty cycle speed
+//      delay(3000);
+//      digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//
+//     // Slot = Slot + 1;
+//    }
+//  }
+//
+//  if (flag1 == 1 && flag2 == 1) {
+//    // delay (1000);
+//    delay (1000);
+//    // myservo1.write(100);
+//    //
+//    digitalWrite(MotorBrakePinA, HIGH); //Eengage the Brake for Channel A
+//
+//    //delay(5000);
+//    flag1 = 0, flag2 = 0;
+//  }
+//  lcd.setCursor (0, 0);
+//  lcd.print("    WELCOME!    ");
+//  lcd.setCursor (0, 1);
+//  lcd.print("Slot Left: ");
+//  lcd.print(Slot);
+//}
