@@ -1,0 +1,789 @@
+#include <Adafruit_GFX.h>
+#include <MCUFRIEND_kbv.h>
+MCUFRIEND_kbv tft;
+#include <TouchScreen.h>
+
+// Include Arduino Wire library for I2C
+#include <Wire.h>
+// Define Slave I2C Address
+#define SLAVE_ADDR 0x09
+ 
+// Define Slave answer size
+//#define ANSWERSIZE 5
+
+// Define string with response to Master
+//String answer = "Hello";
+
+//char incomingByte;
+
+// Includes several fonts at here
+#include "Fonts/FreeSansBold24pt7b.h"
+#include "Fonts/FreeMono18pt7b.h"
+#include "Fonts/FreeMonoBoldOblique18pt7b.h"
+#include "Fonts/FreeSerifBold18pt7b.h"
+#include "Fonts/FreeMonoBold12pt7b.h"  
+
+// Fonts for loading pages Parking and Retrieving.
+#include "Fonts/FreeSans9pt7b.h"
+#include "Fonts/FreeSans12pt7b.h"
+#include "Fonts/FreeSerif12pt7b.h"
+#include "FreeDefaultFonts.h"
+#define PI 3.1415926535897932384626433832795
+
+
+#define MINPRESSURE 200
+#define MAXPRESSURE 1000
+
+// ALL Touch panels and wiring is DIFFERENT
+// copy-paste results from TouchScreen_Calibr_native.ino
+//3.5 Calibration
+const int XP = 8, XM = A2, YP = A3, YM = 9; //320x480 ID=0x9486
+const int TS_LEFT = 144, TS_RT = 887, TS_TOP = 936, TS_BOT = 87;
+/*PORTRAIT CALIBRATION     320 x 480
+  x = map(p.x, LEFT=144, RT=887, 0, 320)
+  y = map(p.y, TOP=936, BOT=87, 0, 480)
+  Touch Pin Wiring XP=8 XM=A2 YP=A3 YM=9
+  LANDSCAPE CALIBRATION    480 x 320
+  x = map(p.y, LEFT=936, RT=87, 0, 480)
+  y = map(p.x, TOP=887, BOT=144, 0, 320)*/
+
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+TSPoint p;
+
+Adafruit_GFX_Button enter_btn;
+Adafruit_GFX_Button parking_btn, retrieve_btn, exit_btn;
+Adafruit_GFX_Button yes_btn, no_btn;
+Adafruit_GFX_Button confirm_btn, clear_btn;
+Adafruit_GFX_Button one_btn, two_btn, three_btn, four_btn, five_btn, six_btn;
+Adafruit_GFX_Button back_btn;
+
+
+//String Key[2][4] = {
+//  { "1", "2", "3", "Confirm" },
+//  { "4", "5", "6", "Cancle" },
+//};
+
+// set up for loading pic
+int col[8];
+
+int pixel_x, pixel_y;     //Touch_getXY() updates global vars
+
+// Button calibration
+int margin = 10;
+int btnWidth = 150;
+int btnHeight = 55;
+int btnY = 200;
+int x;
+
+// variable
+ int Number;
+ //char action;
+ //boolean result = false;
+
+// Assign human-readable names to some common 16-bit colour values:
+#define BLACK 0x0000
+#define NAVY 0x000F
+#define DARKGREEN 0x03E0
+#define DARKCYAN 0x03EF
+#define MAROON 0x7800
+#define PURPLE 0x780F
+#define OLIVE 0x7BE0
+#define LIGHTGREY 0xC618
+#define DARKGREY 0x7BEF
+#define BLUE 0x001F
+#define GREEN 0x07E0
+#define CYAN 0x07FF
+#define RED 0xF800
+#define MAGENTA 0xF81F
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
+#define ORANGE 0xFD20
+#define GREY    0x5555
+#define GREENYELLOW 0xAFE5
+
+// Make an color change array of those values too
+int tftColors[] = {MAROON, OLIVE, MAGENTA, GREENYELLOW, ORANGE, YELLOW, LIGHTGREY};
+
+unsigned int getRandomColor() {
+  static unsigned int prevColor = 99;
+  int color;
+  do {
+    color = random(0, sizeof tftColors / 2);
+    } while (color == prevColor);
+
+  prevColor = color;
+  return tftColors[color];
+}
+
+enum pageId {
+
+Enter,
+Menu,
+Parking,
+Retrieving,
+Ploading,
+Rloading,
+End,
+
+};
+
+unsigned int currentPage = Enter, oldPage = -1;
+
+
+void setup(void)
+{
+// Setup Serial Monitor 
+ Serial.begin(9600);
+ //init TFTTouch
+ uint16_t ID = tft.readID();
+ Serial.print("TFT ID = 0x");
+ Serial.println(ID, HEX);
+ Serial.println(F("Calibrate for your Touch Panel"));
+ if (ID == 0xD3D3) ID = 0x9486;  //for 3.5" TFT LCD Shield
+ tft.begin(ID);
+ tft.setRotation(1); //0-PORTRAIT 1-PAYSAGE 2-REVERSE PORTRAIT 3-REVERSE PAYSAGE
+ 
+// Initialize I2C communications as Slave
+  Wire.begin(SLAVE_ADDR);
+  
+  // Function to run when data requested from master
+  //Wire.onRequest(requestEvent); 
+  //Wire.onRequest(DisplayResult);
+  
+  // Function to run when data received from master
+ // Wire.onReceive(receiveEvent);
+  
+ 
+//Intro();
+ 
+ //tft.setFont(&FreeSmallFont);
+ /*if (!SD.begin(SD_CS)) {
+    Serial.println(F("initialization failed!"));
+    return;
+    }*/
+    
+  currentPage = Enter; // Indicates that we are at Home Screen
+  //Serial.println("Home Page");
+}
+
+bool down ;
+void loop(void) {
+
+   Wire.beginTransmission(SLAVE_ADDR);
+  if (Serial.available()){
+  while (Serial.available()>0){
+//  incominByte = Serial.read();
+ // Wire.write(incominByte);
+ // Serial.println(incominByte);
+//  Wire.endTransmission();
+//  }
+//}
+
+
+ switch (currentPage) {
+
+   case Enter: //Enter page
+     if (currentPage != oldPage)   drawEnterScreen();
+     enter_btn.press(down && enter_btn.contains(pixel_x, pixel_y));
+     
+     if (enter_btn.justReleased())
+     enter_btn.drawButton();
+
+     if (enter_btn.justPressed()) {
+     enter_btn.drawButton(true);
+     Serial.println("Enter Button");
+     currentPage = Menu;
+    }
+    
+    break;
+  
+   case Menu: //Menu page
+     if (currentPage != oldPage) drawMenuScreen();
+     parking_btn.press(down && parking_btn.contains(pixel_x, pixel_y));
+     retrieve_btn.press(down && retrieve_btn.contains(pixel_x, pixel_y));
+     exit_btn.press(down && exit_btn.contains(pixel_x, pixel_y));
+     
+     if (parking_btn.justReleased())
+       parking_btn.drawButton();
+     if (retrieve_btn.justReleased())
+       retrieve_btn.drawButton();
+     if (exit_btn.justReleased())
+       exit_btn.drawButton();
+     if (parking_btn.justPressed()) {
+       parking_btn.drawButton(true);
+       Serial.println("Parking Button");
+       currentPage = Parking;
+     }
+     if (retrieve_btn.justPressed()) {
+       retrieve_btn.drawButton(true);
+       Serial.println("Retrieving Button");
+       currentPage = Retrieving;
+     }
+     if (exit_btn.justPressed()) {
+       exit_btn.drawButton(true);
+      Serial.println("Exit Button");
+      currentPage = Enter;
+   
+     }
+     break;
+     
+   case Parking:
+
+     if (currentPage != oldPage) drawParkingScreen();
+     //readParking();
+     //updateTemp();
+     yes_btn.press(down && yes_btn.contains(pixel_x, pixel_y));
+     no_btn.press(down && no_btn.contains(pixel_x, pixel_y));
+     
+     if (yes_btn.justReleased())
+       yes_btn.drawButton();
+     if (no_btn.justReleased())
+       no_btn.drawButton();
+       
+     if (no_btn.justPressed()) {
+       no_btn.drawButton(true);
+       Serial.println("No Button");
+       currentPage = Menu;  
+     }
+     
+     if (yes_btn.justPressed()) {
+       yes_btn.drawButton(true);
+       Serial.println("Yes Button");
+       currentPage = Ploading;
+     }
+     
+     break;
+
+   case Ploading: //Parking loading page
+     if (currentPage != oldPage)   drawPloadingScreen();
+       
+   //loading page sets up
+     for (int i = 8; i > 0; i--) {
+     tft.fillCircle(240 + 40 * (cos(-i * PI / 4)), 120 + 40 * (sin(-i * PI / 4)), 10, col[0]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 1)*PI / 4)), 120 + 40 * (sin(-(i + 1)*PI / 4)), 10, col[1]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 2)*PI / 4)), 120 + 40 * (sin(-(i + 2)*PI / 4)), 10, col[2]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 3)*PI / 4)), 120 + 40 * (sin(-(i + 3)*PI / 4)), 10, col[3]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 4)*PI / 4)), 120 + 40 * (sin(-(i + 4)*PI / 4)), 10, col[4]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 5)*PI / 4)), 120 + 40 * (sin(-(i + 5)*PI / 4)), 10, col[5]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 6)*PI / 4)), 120 + 40 * (sin(-(i + 6)*PI / 4)), 10, col[6]); delay(15);
+     tft.fillCircle(240 + 40 * (cos(-(i + 7)*PI / 4)), 120 + 40 * (sin(-(i + 7)*PI / 4)), 10, col[7]); delay(15);
+     }
+     delay(7000);
+     currentPage = End;
+     break;
+
+     
+   case Retrieving:
+   
+     if (currentPage != oldPage) drawRetrievingScreen();
+     
+     one_btn.press(down && one_btn.contains(pixel_x, pixel_y));
+     two_btn.press(down && two_btn.contains(pixel_x, pixel_y));
+     three_btn.press(down && three_btn.contains(pixel_x, pixel_y));
+     four_btn.press(down && four_btn.contains(pixel_x, pixel_y));
+     five_btn.press(down && five_btn.contains(pixel_x, pixel_y));
+     six_btn.press(down && six_btn.contains(pixel_x, pixel_y));
+     
+     confirm_btn.press(down && confirm_btn.contains(pixel_x, pixel_y));
+     clear_btn.press(down && clear_btn.contains(pixel_x, pixel_y));
+     back_btn.press(down && back_btn.contains(pixel_x, pixel_y));
+     
+     if (back_btn.justReleased())
+        back_btn.drawButton();
+     if (one_btn.justReleased())
+        one_btn.drawButton();
+     if (two_btn.justReleased())
+        two_btn.drawButton();
+     if (three_btn.justReleased())
+        three_btn.drawButton();
+     if (four_btn.justReleased())
+        four_btn.drawButton();
+    if (five_btn.justReleased())
+        five_btn.drawButton();
+    if (six_btn.justReleased())
+        six_btn.drawButton();     
+    if (confirm_btn.justReleased())
+        confirm_btn.drawButton();
+    if (clear_btn.justReleased())
+        clear_btn.drawButton();
+       
+    if (back_btn.justPressed()) {
+       back_btn.drawButton(true);
+       Serial.println ("Back Button");
+       currentPage = Menu;
+     }
+     
+     if (one_btn.justPressed()) {
+       one_btn.drawButton(true);
+       Serial.println ("Button 1"); 
+      // if (Number==0)
+       Number=1;   
+       DisplayResult();
+        Number = Serial.read();
+        //Wire.write(Number);
+        //Serial.println(Number);
+       // Wire.endTransmission();
+     }
+     
+     if (two_btn.justPressed()) {
+         two_btn.drawButton(true);
+        Serial.println ("Button 2"); 
+     //  if (Number==0)
+       Number=2;
+       DisplayResult();
+       Number = Serial.read(); 
+      // Wire.write(Number);
+     //   Serial.println(Number);
+     }
+
+     if (three_btn.justPressed()) {
+         three_btn.drawButton(true);
+        Serial.println ("Button 3"); 
+     //  if (Number==0)
+       Number=3;
+       DisplayResult();
+        Number = Serial.read();
+     //   Wire.write(Number);
+     //   Serial.println(Number);
+     }
+
+     if (four_btn.justPressed()) {
+         four_btn.drawButton(true);
+        Serial.println ("Button 4"); 
+    //   if (Number==0)
+       Number=4;
+       DisplayResult();
+        Number = Serial.read();
+     //   Wire.write(Number);
+     //   Serial.println(Number);
+     }
+
+     if (five_btn.justPressed()) {
+         five_btn.drawButton(true);
+        Serial.println ("Button 5"); 
+    //   if (Number==0)
+       Number=5;
+       DisplayResult();
+        Number = Serial.read();
+      //  Wire.write(Number);
+      //  Serial.println(Number);
+     }
+
+
+     if (six_btn.justPressed()) {
+         six_btn.drawButton(true);
+        Serial.println ("Button 6"); 
+     //  if (Number==0)
+       Number=6;
+       DisplayResult();
+       Number = Serial.read();
+      // Wire.write(Number);
+     //   Serial.println(Number);
+     }
+
+ 
+     if (confirm_btn.justPressed()) {
+         confirm_btn.drawButton(true);
+        Serial.println ("Button confirm"); 
+        Wire.write(Number);
+        Serial.println(Number);
+        Wire.endTransmission();
+        currentPage = Rloading;
+     }
+
+     
+     if (clear_btn.justPressed()) {
+         clear_btn.drawButton(true);
+         Serial.println ("Button clear"); 
+         Number=0;
+         DisplayResult();
+       
+     }
+     
+   break;
+
+
+   case Rloading: //Retrieving loading page
+    if (currentPage != oldPage)   drawRloadingScreen();
+
+           //loading page sets up
+    for (int i = 8; i > 0; i--) {
+    tft.fillCircle(240 + 40 * (cos(-i * PI / 4)), 120 + 40 * (sin(-i * PI / 4)), 10, col[0]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 1)*PI / 4)), 120 + 40 * (sin(-(i + 1)*PI / 4)), 10, col[1]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 2)*PI / 4)), 120 + 40 * (sin(-(i + 2)*PI / 4)), 10, col[2]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 3)*PI / 4)), 120 + 40 * (sin(-(i + 3)*PI / 4)), 10, col[3]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 4)*PI / 4)), 120 + 40 * (sin(-(i + 4)*PI / 4)), 10, col[4]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 5)*PI / 4)), 120 + 40 * (sin(-(i + 5)*PI / 4)), 10, col[5]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 6)*PI / 4)), 120 + 40 * (sin(-(i + 6)*PI / 4)), 10, col[6]); delay(15);
+    tft.fillCircle(240 + 40 * (cos(-(i + 7)*PI / 4)), 120 + 40 * (sin(-(i + 7)*PI / 4)), 10, col[7]); delay(15);       
+     }
+     delay(7000);
+     currentPage = End;
+     break;
+
+   case End: //Retrieving loading page
+     if (currentPage != oldPage) drawEndScreen();
+
+     if (Touch_getXY()) {
+  
+     currentPage = Enter;
+     
+      }
+     break;
+ }
+
+ if (oldPage == currentPage){
+   down = Touch_getXY();
+ }else{
+   down=false;
+ }
+}
+
+  }
+}
+
+/************************************************************************************
+    SCREENS DEFINTION
+ ************************************************************************************/
+
+//void receiveEvent() {
+// 
+//  // Read while data received
+//  while (0 < Wire.available()) {
+//    byte x = Wire.read();
+//  }
+//  
+//  // Print to Serial Monitor
+//  Serial.println("Receive event");
+//}
+// 
+//void requestEvent() {
+// 
+//  // Setup byte variable in the correct size
+//  byte response[ANSWERSIZE];
+//  
+//  // Format answer as array
+//  for (byte i=0;i<ANSWERSIZE;i++) {
+//    response[i] = (byte)answer.charAt(i);
+//  }
+//  
+//  // Send response back to Master
+//  Wire.write(response,sizeof(response));
+//  
+//  // Print to Serial Monitor
+//  Serial.println("Request event");
+//}
+
+
+
+
+ 
+// Showing the DEMO message
+void Intro(){
+  Serial.println("Intro Page");
+  tft.fillScreen(BLACK);
+  
+  tft.setCursor(80, 100);
+  tft.setTextSize(1);
+  tft.setTextColor(RED);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.println("ENGR 697G - 05");
+
+  tft.setCursor(120, 200);
+  tft.setTextColor(YELLOW);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(1);
+  tft.println("Final Project");
+
+  tft.setCursor(190, 300);
+  tft.setTextSize(1);
+  tft.setTextColor(RED);
+  tft.println("Demo");
+  
+  delay(4000);
+  
+  tft.fillScreen(BLACK);
+  tft.setCursor(0, 50);
+  tft.setTextColor(ORANGE);
+  tft.setTextSize(1);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.println("ENGR 697G-05 Engineering Design");
+  tft.println("             Project II - SP2021");
+  tft.setTextColor(BLUE);
+  tft.println("Instructor:");
+  tft.setTextColor(GREEN);
+  tft.println("Dr. Hamid Mahmoodi");
+  
+  tft.setCursor(0, 190);
+  tft.setTextColor(YELLOW);
+  tft.println("Smart Rotary Parking Team");
+  tft.setTextColor(BLUE);
+  tft.println("Team Member:");
+  tft.setTextColor(GREEN);
+  tft.print("Yunjie Li & Bao Chau");
+  
+  delay(5000);
+}
+
+
+void drawEnterScreen(){
+    Serial.println("Home Screen");
+    tft.fillScreen(BLACK);
+     
+    for (int cnt=0; cnt< 5; cnt++) {
+    tft.setCursor(120, 100);
+    tft.setTextColor(getRandomColor());
+    tft.setFont(&FreeSerifBold18pt7b);
+    tft.setTextSize(3);
+    tft.println("Hello!");
+
+    tft.setFont(&FreeMonoBoldOblique18pt7b);
+    tft.setTextSize(1);
+    tft.setCursor(5, 160);
+    tft.setTextColor(getRandomColor());
+    tft.println("Welcome to");
+
+    tft.setCursor(52, 220);
+    tft.setFont(&FreeMonoBoldOblique18pt7b);
+    tft.setTextColor(getRandomColor());
+    tft.println("Smart Rotary");
+    tft.setCursor(30, 260);
+    tft.println("Parking System");
+    }
+    
+    tft.setFont();
+ // Buttons
+    enter_btn.initButton (&tft, tft.width() / 2. + 160, 40 + 3 * 4 + 6 * 8 + (btnWidth - 30), btnWidth - 20, btnWidth - 30, WHITE, BLUE, RED, "Enter", 3);
+    enter_btn.drawButton(false);
+    oldPage = currentPage;
+}
+
+ 
+void drawMenuScreen() {
+  Serial.println("Menu Screen");
+  tft.fillScreen(BLACK);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeSansBold24pt7b);
+  tft.setTextSize(1);
+  tft.setCursor(120, 50);
+  tft.println("Main  Menu");// Prints the string on the screen
+  tft.drawFastHLine(0,60,480,RED);// Draws the red line
+
+  tft.setCursor(145, 85);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(1);
+  tft.println("Select Options");
+  
+  tft.setFont();
+ // tft.setTextSize(1);
+ // Buttons
+  parking_btn.initButton(&tft,  tft.width() / 2., tft.height() / 1.6 - (1.*btnHeight + margin), 2 * btnWidth, btnHeight, WHITE, BLUE, CYAN, "Parking", 4);
+  retrieve_btn.initButton(&tft, tft.width() / 2., tft.height() / 1.6, 2 * btnWidth, btnHeight, WHITE, BLUE, CYAN, "Retrieve", 4);
+  exit_btn.initButton(&tft, tft.width() / 2., tft.height() / 1.6 + (1.*btnHeight + margin), 2 * btnWidth, btnHeight, WHITE, BLUE, CYAN, "Exit", 4);
+
+  parking_btn.drawButton(false);
+  retrieve_btn.drawButton(false);
+  exit_btn.drawButton(false);
+ 
+ //Button frame
+// tft.drawRoundRect(tft.width() / 2. - 1.5 * btnWidth, tft.height() / 2. - (1.5 * btnHeight + 2 * margin), 2 * btnWidth + btnWidth, 3 * btnHeight + 4 * margin, 10, GREEN);
+   oldPage = currentPage;
+}
+
+
+void drawParkingScreen() {
+  Serial.println("Parking Screen");
+  tft.fillScreen(BLACK);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeMonoBoldOblique18pt7b);
+  tft.setTextSize(1);
+  tft.setCursor(25,40);
+  tft.println("Parking Confirmation");
+  tft.drawFastHLine(0,60,480,RED);
+
+  tft.setTextColor(MAGENTA);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(1);
+  tft.setCursor(30,110);
+  tft.println("Dear Customer:");
+  tft.setCursor(45,140);
+  tft.println("Have you parked properly?");
+
+  tft.setFont();
+  yes_btn.initButton(&tft,  tft.width() / 2. - btnWidth / 2. , 60 + 3 * 4 + 6 * 8 + (btnWidth - 30), btnWidth - 20, btnWidth - 30, WHITE, BLUE, GREEN, "Yes", 5);
+  no_btn.initButton(&tft, tft.width() / 2. + btnWidth / 2. + margin, 60 + 3 * 4 + 6 * 8 + (btnWidth - 30), btnWidth - 20, btnWidth - 30, WHITE, BLUE, RED, "No", 5);
+
+  yes_btn.drawButton(false);
+  no_btn.drawButton(false);
+  oldPage = currentPage;
+  
+}
+
+
+void drawRetrievingScreen() {
+  Serial.println("Retrieve Screen");
+  tft.setTextSize(1);
+  tft.fillScreen(BLACK);
+  back_btn.initButton(&tft,  60 , 20, btnWidth, btnHeight, WHITE, BLUE, CYAN, "<- Back", 2);
+
+// Draw the upper row of buttons
+  
+  one_btn.initButton(&tft, 100, 160, 130, 55, WHITE, BLUE, CYAN, "1", 4);
+  two_btn.initButton(&tft, 240, 160, 130, 55, WHITE, BLUE, CYAN, "2", 4);
+  three_btn.initButton(&tft, 380, 160, 130, 55, WHITE, BLUE, CYAN, "3", 4);
+ 
+// Draw the lower row of buttons
+
+  four_btn.initButton(&tft, 100, 220, 130, 55, WHITE, BLUE, CYAN, "4", 4);
+  five_btn.initButton(&tft, 240, 220, 130, 55,  WHITE, BLUE, CYAN, "5", 4);
+  six_btn.initButton(&tft, 380, 220, 130, 55, WHITE, BLUE, CYAN, "6", 4);
+
+
+  confirm_btn.initButton(&tft, 350, 280, 190, 55, WHITE, BLUE, GREEN, "Confirm", 3);
+  clear_btn.initButton(&tft, 130, 280, 190, 55, WHITE, BLUE, RED, "Clear", 3);
+ 
+  back_btn.drawButton(false);
+  one_btn.drawButton(false);
+  two_btn.drawButton(false);
+  three_btn.drawButton(false);
+  four_btn.drawButton(false);
+  five_btn.drawButton(false);
+  six_btn.drawButton(false);
+  confirm_btn.drawButton(false);
+  clear_btn.drawButton(false);
+
+  tft.fillRect(tft.width() / 2. - 95, btnHeight - 38, 2*btnWidth, btnHeight + 50, DARKGREEN);
+  tft.drawRect(tft.width() / 2. - 95, btnHeight - 38, 2*btnWidth, btnHeight + 50, DARKCYAN);
+
+  tft.setCursor(tft.width() / 2. - 80, btnHeight-25);
+  tft.setTextColor(ORANGE);
+ // tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(2);
+  tft.println("Enter Parking Slot#:");
+
+  
+ // drawTextInRect(3 * tft.width() / 4., tft.height() / 4., Number, 5, RED, 255);
+ 
+  oldPage = currentPage;
+}
+
+void DisplayResult(){
+   
+  tft.fillRect(335, 60, 90, btnHeight + 5, DARKGREEN);
+  tft.setCursor(370, 70);
+  //tft.setFont();
+  tft.setTextSize(5);
+  tft.setTextColor(RED);
+  tft.println(Number);
+  
+// Setup byte variable in the correct size
+//  byte response[ANSWERSIZE];
+  
+  // Format answer as array
+//  for (byte i=0;i<ANSWERSIZE;i++) {
+//    response[i] = (byte)answer.charAt(i);
+//  }
+  
+  // Send response back to Master
+ // Wire.write(response,sizeof(response));
+   Wire.write(Number);
+  
+  // Print to Serial Monitor
+  Serial.println(Number);
+
+}
+
+void drawPloadingScreen(){  
+  Serial.println("Parking Screen");
+  //tft.invertDisplay(true);
+  tft.fillScreen(BLACK);
+  showmsgXY(170, 250, 2, &FreeSans9pt7b, "Parking...");
+  col[0] = tft.color565(155, 0, 50);
+  col[1] = tft.color565(170, 30, 80);
+  col[2] = tft.color565(195, 60, 110);
+  col[3] = tft.color565(215, 90, 140);
+  col[4] = tft.color565(230, 120, 170);
+  col[5] = tft.color565(250, 150, 200);
+  col[6] = tft.color565(255, 180, 220);
+  col[7] = tft.color565(255, 210, 240);
+  //delay(5000);
+}
+
+void drawRloadingScreen(){
+  Serial.println("Returning Screen");
+  //tft.invertDisplay(true);
+  tft.fillScreen(BLACK);
+  showmsgXY(170, 250, 2, &FreeSans9pt7b, "Returning...");
+  col[0] = tft.color565(155, 0, 50);
+  col[1] = tft.color565(170, 30, 80);
+  col[2] = tft.color565(195, 60, 110);
+  col[3] = tft.color565(215, 90, 140);
+  col[4] = tft.color565(230, 120, 170);
+  col[5] = tft.color565(250, 150, 200);
+  col[6] = tft.color565(255, 180, 220);
+  col[7] = tft.color565(255, 210, 240);
+  //delay(5000);
+}
+
+
+void drawEndScreen(){
+  Serial.println("End Screen");
+  tft.fillScreen(BLACK);
+  tft.setCursor(40, 100);
+  tft.setTextColor(ORANGE);
+  tft.setFont(&FreeMonoBoldOblique18pt7b);
+  tft.setTextSize(2);
+  tft.println("Thank You!");
+  
+  tft.setCursor(180, 160);
+  tft.setTextColor(RED);
+  tft.setFont(&FreeSans9pt7b);
+  tft.setTextSize(2);
+  tft.println("for using");
+
+  tft.setCursor(75, 220);
+  tft.setTextColor(WHITE);
+  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setTextSize(2);
+  tft.println("Smart Rotary");
+  tft.setCursor(50, 260);
+  tft.println("Parking System");
+  oldPage = currentPage;
+}
+
+/************************************************************************************
+    UTILITY FUNCTIONS
+*************************************************************************************/
+
+//Function for loading pages Parking and Retrieving.
+void showmsgXY(int x, int y, int sz, const GFXfont *f, const char *msg)
+{
+int16_t x1, y1;
+uint16_t wid, ht;
+tft.setFont(f);
+tft.setCursor(x, y);
+tft.setTextColor(0xFFFF);
+tft.setTextSize(sz);
+tft.print(msg);
+}
+
+bool Touch_getXY(void)
+{
+ p = ts.getPoint();
+ pinMode(YP, OUTPUT);      //restore shared pins
+ pinMode(XM, OUTPUT);
+ digitalWrite(YP, HIGH);
+ digitalWrite(XM, HIGH);
+ bool pressed = (p.z > MINPRESSURE && p.z < MAXPRESSURE);
+ if (pressed) {
+   if (tft.width() <= tft.height()) { //Portrait
+     pixel_x = map(p.x, TS_LEFT, TS_RT, 0, tft.width()); //.kbv makes sense to me
+     pixel_y = map(p.y, TS_TOP, TS_BOT, 0, tft.height());
+   } else {
+     pixel_x = map(p.y, TS_TOP, TS_BOT, 0, tft.width());
+     pixel_y = map(p.x, TS_RT, TS_LEFT, 0, tft.height());
+   }
+ }
+ return pressed;
+}
