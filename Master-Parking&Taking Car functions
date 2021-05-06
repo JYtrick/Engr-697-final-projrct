@@ -23,7 +23,7 @@ const int CCW = LOW;
 
 
 int IR0 = 0;  // sensor pin detect the car outdoor
-int IR1 = 0;  // sensor pin detect the car indoor
+//int IR1 = 0;  // sensor pin detect the car indoor
 
 int recvpin1 = 2; // sensor pin detect the car at the spot 1
 int recvpin2 = 4; // sensor pin detect the car at the spot 2
@@ -51,7 +51,7 @@ void setup()
 
   // Start the sensor/receiver
   pinMode(IR0, INPUT);
-  pinMode(IR1, INPUT);
+  //pinMode(IR1, INPUT);
   pinMode(recvpin1, INPUT);
   pinMode(recvpin2, INPUT);
   pinMode(recvpin3, INPUT);
